@@ -1,9 +1,218 @@
+#define ledRed 14
+#define ledGreen 15
+#define ledBlue 16
+ 
+#define smaPin1 8
+#define smaPin2 12
+#define smaShield1 9
+#define smaShield2 13
+#define activateSma1 9
+#define activateSma2 10
+ 
+#define bncPin1 7
+#define bncPin2 5
+#define bncShield1 6
+#define bncShield2 4
+ 
 void setup() {
-  // put your setup code here, to run once:
-
+  Serial.begin(9600);
+  pinMode(ledRed, OUTPUT);
+  pinMode(ledGreen, OUTPUT);
+  pinMode(ledBlue, OUTPUT);
+ 
+  for(byte i=0; i<2; i++){
+	digitalWrite(ledRed, HIGH);
+	delay(200);
+	digitalWrite(ledRed, LOW);
+	delay(200);
+  }  
+  for(byte i=0; i<2; i++){
+	digitalWrite(ledBlue, HIGH);
+	delay(200);
+	digitalWrite(ledBlue, LOW);
+	delay(200);
+  }  
+  for(byte i=0; i<2; i++){
+	digitalWrite(ledGreen, HIGH);
+	delay(200);
+	digitalWrite(ledGreen, LOW);
+	delay(200);
+  }
+ 
 }
-
+ 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  testSma();
+  testBnc();
 }
+void testBnc(){
+  byte testResult = true;
+  static byte testSteps = 0;
+ 
+  pinMode(bncPin1, INPUT_PULLUP);
+  pinMode(bncPin2, OUTPUT);
+  digitalWrite(bncPin2, LOW);
+ 
+  if(digitalRead(bncPin1)==LOW&&testSteps==0){
+	signatureLed(3);
+	delay(500);
+	testSteps=1;    
+	pinMode(bncShield1, INPUT_PULLUP);
+	pinMode(bncShield2, OUTPUT);
+	digitalWrite(bncShield2, LOW);
+ 
+	if(digitalRead(bncShield1)==LOW){
+  	Serial.println("Test polaczen OK");
+	}else{
+  	Serial.println("Test polaczen NIEOK");
+  	testResult=false;
+	}
+  }
+  //test na zwarcie
+  if(testSteps==1){
+  	pinMode(bncPin2, OUTPUT);
+  	pinMode(bncShield2, OUTPUT);
+  	digitalWrite(bncPin2, HIGH);
+  	digitalWrite(bncShield2, LOW);
+ 	 
+  	pinMode(bncPin1, INPUT_PULLUP);
+  	pinMode(bncShield1, OUTPUT);
+  	digitalWrite(bncShield1, LOW);
+  	if(digitalRead(bncPin1)==LOW){
+    	Serial.println("zwarcie");
+    	testSteps=2;
+    	testResult=false;
+    	signatureLed(4);
+  	}else{
+    	testSteps=2;
+    	Serial.println("brak zwarcia");
+  	}
+  }
+ 
+  //wynik testu
+  if(testResult&&testSteps==2){
+	Serial.println("test OK");
+	testSteps=3;
+	signatureLed(2);
+  }else if(!testResult&&testSteps==2){
+	Serial.println("test NIEOK");
+	testSteps=3;
+	signatureLed(1);
+  }
+ 
+  //oczekiwanie na odpiecie przewodow z testera
+  if(testSteps==3){
+	//czekam na odpiecie przewodu od testera
+	pinMode(bncPin1, INPUT_PULLUP);
+	pinMode(bncPin2, OUTPUT);
+	digitalWrite(bncPin2, LOW);
+	if(digitalRead(bncPin1)==HIGH){
+  	Serial.println("no i zakonczono test...");
+  	testSteps=0;
+  	delay(300);
+	}
+  }
+}
+void testSma(){
+  byte testResult = true;
+  static byte testSteps = 0;
+ 
+  pinMode(activateSma1, INPUT_PULLUP);
+  pinMode(activateSma2, OUTPUT);
+  digitalWrite(activateSma2, LOW);
+ 
+  //uruchomienie testu po aktywacji
+  if(digitalRead(activateSma1)==LOW&&testSteps==0){
+  	signatureLed(3);
+  	testSteps=1;
+  	/******************************************/
+  	pinMode(smaPin1, INPUT_PULLUP);
+  	pinMode(smaPin2, OUTPUT);
+  	digitalWrite(smaPin2, LOW);
+  	/******************************************/
+  	pinMode(smaShield1, INPUT_PULLUP);
+  	pinMode(smaShield2, OUTPUT);
+  	digitalWrite(smaShield2, LOW);
+  	/******************************************/
+  	delay(500);
+  	if(digitalRead(smaPin1)==LOW&&digitalRead(smaShield1)==LOW){
+    	Serial.println("Test polaczen OK");
+  	}else{
+    	Serial.println("Test polaczen NIEOK");
+    	testResult = false;
+  	}
+  }
+ 
+  //test na zwarcie
+  if(testSteps==1){
+  	pinMode(smaPin2, OUTPUT);
+  	pinMode(smaShield2, OUTPUT);
+  	digitalWrite(smaPin2, HIGH);
+  	digitalWrite(smaShield2, LOW);
+ 	 
+  	pinMode(smaPin1, INPUT_PULLUP);
+  	pinMode(smaShield1, OUTPUT);
+  	digitalWrite(smaShield1, LOW);
+  	if(digitalRead(smaPin1)==LOW){
+    	testSteps=2;
+    	testResult=false;
+    	signatureLed(4);
+    	Serial.println("zwarcie");
+  	}else{
+    	testSteps=2;
+    	Serial.println("brak zwarcia");
+  	}
+  }
+ 
+  //wynik testu
+  if(testResult&&testSteps==2){
+	Serial.println("test OK");
+	testSteps=3;
+	signatureLed(2);
+  }else if(!testResult&&testSteps==2){
+	Serial.println("test NIEOK");
+	testSteps=3;
+	signatureLed(1);
+  }
+ 
+  if(testSteps==3){
+	//czekam na odpiecie przewodu od testera
+	pinMode(activateSma1, INPUT_PULLUP);
+	pinMode(activateSma2, OUTPUT);
+	digitalWrite(activateSma2, LOW);
+	if(digitalRead(activateSma1)==HIGH){
+  	Serial.println("no i zakonczono test...");
+  	testSteps=0;
+  	delay(300);
+	}
+  }
+ 
+}
+void signatureLed(byte status){
+  switch(status){
+	case 1:  //blad
+  	digitalWrite(ledBlue, LOW);
+  	digitalWrite(ledRed, HIGH);
+  	delay(2000);
+  	digitalWrite(ledRed, LOW);
+	break;
+	case 2:  //ok
+  	digitalWrite(ledBlue, LOW);
+  	digitalWrite(ledGreen, HIGH);
+  	delay(2000);
+  	digitalWrite(ledGreen, LOW);
+	break;
+	case 3:  //oczekiwanie na test
+  	digitalWrite(ledBlue, HIGH);
+	break;
+	case 4:  //zwarcie
+  	for(byte i=0;i<4;i++){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 	 
+    	digitalWrite(ledRed, HIGH);
+    	delay(100);
+    	digitalWrite(ledRed, LOW);
+    	delay(100);
+  	}
+	break;
+  }
+}
+ 
