@@ -1,19 +1,19 @@
-#define ledRed 14
-#define ledGreen 15
-#define ledBlue 16
-#define testSwitch 17
+#define ledRed 14 //A0
+#define ledGreen 15 //A1
+#define ledBlue 16 //A2
+#define testSwitch 17 //A3
 
-#define smaPin1 8
-#define smaPin2 12
-#define smaShield1 9
-#define smaShield2 13
-#define activateSma1 9
-#define activateSma2 10
+#define smaPin1 8 /D8
+#define smaPin2 12 //D12
+#define smaShield1 9 D9
+#define smaShield2 13 //D13
+#define activateSma1 9 //D9
+#define activateSma2 10 //D10
 
-#define bncPin1 7
-#define bncPin2 5
-#define bncShield1 6
-#define bncShield2 4
+#define bncPin1 7 //D7
+#define bncPin2 5 //D5
+#define bncShield1 6 //D6
+#define bncShield2 4 //D4
 
 
 void setup() {
